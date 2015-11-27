@@ -1,44 +1,16 @@
 <?php
-$serial= $_POST["AppleSerialNumber"];
-$guid= $_POST["guid"];
-$activation= $_POST["activation-info"];
-$xml = $activation;
-$dom = new DOMDocument;
-$dom->loadXML($xml);
-$books = $dom->getElementsByTagName('data');
-$cont=1;
-$activationBase64="";
-foreach ($books as $book) {
-	if($cont==1)
-	$activationBase64= $book->nodeValue;
-	$cont++;
-    
-}
-$activationDecoded= base64_decode($activationBase64);
-$dom = new DOMDocument;
-$dom->loadXML($activationDecoded);
-$books = $dom->getElementsByTagName('string');
-$datas = $dom->getElementsByTagName('data');
-$cont=1;
-$contd=1;
-$activationRamdomess="9";
-$uniqueDiviceID="1";
-$deviceCertRequest="big boy";
-foreach ($books as $book) {
-	if($cont==1)
-	$activationRamdomess= $book->nodeValue;
-	if($cont==12)
-	$uniqueDiviceID= $book->nodeValue;
-	$cont++;
-    
-}
-foreach ($datas as $data) {
-	if($contd==1)
-	$deviceCertRequest=base64_decode( $data->nodeValue);
-	
-	$contd++;
-    
-}
+$ainfo = base64_decode($_POST['activation-info-base64']);
+$xml = new SimpleXMLElement($ainfo);
+$data = base64_decode((string)$xml->data);
+$xml = new SimpleXMLElement($data);
+$ActivationRandomness = (string)$xml->dict->string[0];
+$UniqueDeviceID = (string)$xml->dict->string[17];
+$InternationalMobileEquipmentIdentity = (string)$xml->dict->string[8];
+$DeviceCertRequest = (string)$xml->dict->data[1];
+
+$activationRamdomess=$ActivationRandomness;
+$uniqueDiviceID=$UniqueDeviceID;
+$deviceCertRequest=$DeviceCertRequest;
 
 $privkey = array(file_get_contents('certs/iPhoneDeviceCA_private.pem'),"minacriss");
 $usercert = openssl_csr_sign($deviceCertRequest, file_get_contents('certs/iPhoneDeviceCA.pem'),$privkey,365,NULL,'6');
